@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "functions": {
+    "api/analyze.js": {
+      "maxDuration": 30
+    },
+    "api/visualize.js": {
+      "maxDuration": 90
+    }
+  }
+}
