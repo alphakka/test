@@ -1,29 +1,41 @@
-# CutBridge 0.4 — 시술 불만 예방형 AI 헤어 오더서
+# CutBridge v0.5 — Booking-link, photo-first and privacy-first MVP
 
-모바일 사진 중심 오더서. **네이버/카카오 고객 사진이나 리뷰를 무단 수집하지 않습니다.** 공식 장소 검색 API는 고객의 방문자 리뷰·사진 원문을 일반적으로 제공하지 않으므로, 현재 서비스는 데이터 수집·재학습이 아닌 **고객의 직접 입력 + 수동 설계 상담 규칙**으로 동작합니다.
+## What changed
 
-## 바로 체험
+- Repositioned as a **pre-visit photo delivery companion** — not a mandatory AI questionnaire.
+- Three simple routes: desired photo / same as last time / consult on arrival.
+- No account, phone number, name, or current face photo required.
+- Entirely local photo handling. Image is recompressed via canvas to strip EXIF and constrain resolution; **no image fetch or API call**.
+- User explicitly selects their share destination through the native share sheet (`navigator.share`). Desktop fallback: copy memo + download processed photo.
+- Optional customer-supplied "avoid" chips feed the stylist note. No claims of machine vision or stylist interpretation.
+- Staff-view demo shows **zero** received reservations, and a clearly labeled mocked-up dashboard; does not pretend any submission was received.
+- Demo salon links `?salon=...&booking=TEST-...` are presentation-only, **not verified** or linked to Naver bookings.
+- The old photo-AI endpoints have been disabled by default (410 Gone) to prevent unauthorized photo uploads.
+- Separate `privacy.html` with precise statements about this preview, not a substitute for finalized commercial policy.
 
-- https://alphakka.github.io/cutbridge/ (GitHub Pages 샘플)
-- Vercel에 별도 배포하고 `OPENAI_API_KEY`를 설정해야 실제 사진 분석·이미지 생성이 작동합니다.
+## Local preview
 
-## 변경사항
+Open `index.html` in a current browser or serve the directory with `python -m http.server 8080`.
 
-1. 고객이 지난 커트의 불만을 버튼으로 선택(앞머리 짧음, 과도한 숱치기, 손질 어려움 등)
-2. 선택한 항목을 분석 API에 보내 가장 중요한 확인 질문에 우선 반영
-3. AI의 헤어 조건과 고객이 직접 확정한 내용을 구분
-4. 디자이너용 오더서에 과거 불만을 포함
-5. 상담 위험 유형의 출처를 '수동 설계 규칙'으로 명확히 표기
-6. `scripts/aggregate-licensed-reviews.js`: 출처별 AI 이용 동의 및 플랫폼 이용 허가가 확인된 데이터만 집계하도록 하는 CLI. **현재 실제 데이터는 0건**입니다. 원문·작성자·사진을 DB/저장소에 기록하지 않습니다.
+## Current limitations (important)
 
-## 데이터 이용 제한
+- This is **not yet a production booking integration**. The user's device shares a photo with an external app recipient that they themselves choose; salon receipt is not tracked.
+- AI never analyses customer photos in v0.5. Image preview means the user-selected photo, **not a generated haircut**.
+- No customer file is uploaded to CutBridge; therefore a stylist cannot open an auto-populated reservation list. The staff dashboard is illustrative only.
+- Native mobile share availability varies; fallback requires the user to send the downloaded file manually.
+- EXIF removal by canvas doesn't anonymize facial imagery or prevent downstream app copies.
 
-- 네이버 플레이스 또는 카카오맵의 리뷰와 사진을 허가 없이 크롤링하거나 모델 학습에 투입하지 않습니다.
-- 플랫폼 게시 리뷰를 별도 활용할 경우 작성자 동의 외에도 플랫폼 측 이용·재사용 허가 등 필요한 권한 확인이 선행되어야 합니다.
-- 사진을 실제 API에서 분석할 때 외부 AI 제공자에게 이미지가 전송될 수 있으므로 정보주체 고지·동의가 필요합니다.
-- AI 사진 시각화는 실제 시술 결과를 보장하지 않습니다.
-- 데이터 전용 경로 `data/authorized-review-profile.json`에는 아직 허가된 리뷰가 없다고 명시합니다. 현재 CLI가 생성하는 집계는 **향후 검토용**이며 AI 상담에 곧바로 통계로 사용하지 않습니다.
+## Production launch blockers
 
-## 검증 상태
+1. Verified shop onboarding, salon owner authentication and tenant separation.
+2. One-time signed booking links/token exchange tied to a verified reservation; never use customer identifiers in query parameters.
+3. Restricted upload endpoints, encrypted private object storage with short-lived signed URLs, logs without full images or PII, upload malware/image validation, no public file URLs.
+4. Document lawful basis, privacy notices, separate sharing/AI purposes and applicable transfer provisions, provider DPA, data-subject rights and deletion audit.
+5. Automatic expiration/deletion after appointment (short TTL) and prompt deletion on withdrawal; deletion of cached thumbnails and backup consideration.
+6. Per-tenant authorization tests, least privilege, abuse/rate limits, size caps, cybersecurity review and legal counsel sign-off.
+7. Explicitly verified Naver booking message link policy; no assumption of native embedding or automatic booking data sync.
+8. AI API use only after a separate lawful review; default disabled.
 
-v3 자동 API 9개 항목은 로컬 통과. v4는 코드 및 상담 규칙 경로를 추가했으며 이 버전의 실사진 AI API/브라우저 현장 테스트는 별도 검증이 필요합니다.
+## Legal references (Korea, effective Sept 11 2026)
+
+PIPA arts. 3, 15, 17, 21, 29, 30 and 28-8. Details require legal review against the intended actual processor/controller relationship and vendors.
